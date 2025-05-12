@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="la">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CODEI81224 :: Finis Dierum</title>
+  <link id="favicon" rel="icon" type="image/png" href="sitelogo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+
+  <style>
+    /* --- CSS RESET & GLOBAL DEFAULTS --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: #000000; color: #9a9a9a; font-family: 'Cinzel', serif;
+      line-height: 1.7; font-size: 16px; overflow-x: hidden;
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23800" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 12l10 10 10-10-10-10z"></path><line x1="2" y1="12" x2="22" y2="12"></line></svg>') 12 12, auto;
+      transition: background-color 0.6s ease-in-out; min-height: 100vh;
+      position: relative;
+    }
+    body.no-scroll, body.idiot-swarm-active, body.lockdown-active { overflow: hidden !important; }
+    body.startup-phase { display: flex; justify-content: center; align-items: center; }
+    body.global-glitch-effect { animation: bodyMasterGlitchIntense 0.08s ease-in-out 5; }
+    body::before { /* Furthest back texture */
+        content:""; position:fixed; top:0; left:0; width:100vw; height:100vh;
+        background-image:url('https://www.transparenttextures.com/patterns/γράμματα-Μαύρο.png');
+        opacity:0.05; z-index:-2; pointer-events:none; mix-blend-mode: multiply;
+    }
+    #blood-canvas { /* Background blood */
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        z-index: -1; pointer-events: none;
+    }
+
+    /* --- TEXT SELECTION & POINTER EVENTS --- */
+    .unselectable-text, .section-content p, .section-title, #ritual-instruction, .startup-text, footer p, body.idiot-swarm-active *, body.lockdown-active * {
+        user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;
+    }
+    /* Allow specific elements to be interactive during lockdown/idiot swarm if needed */
+    body.idiot-swarm-active *:not(#idiot-container):not(#idiot-container *):not(#sfx-idiot-loop),
+    body.lockdown-active *:not(#permanent-lockdown-overlay):not(#permanent-lockdown-overlay *):not(#sfx-scream-ephemeral) {
+        pointer-events: none !important;
+    }
+    .unselectable-text a, .section-content a, footer a {
+        user-select:auto;-webkit-user-select:auto;-moz-user-select:auto;-ms-user-select:auto;
+        pointer-events:auto; /* Ensure links are clickable if not in lockdown */
+    }
+
+
+    /* --- KEYFRAMES: GLOBAL --- */
+    @keyframes bodyMasterGlitchIntense {0%,100%{transform:skew(0) translate(0,0);filter:none;background-color:#000;} 25%{transform:skew(3deg,-2deg) translate(2px, -1px); filter:hue-rotate(90deg) brightness(0.7) saturate(1.5); background-color:#300;} 50%{transform:skew(-4deg,3deg) translate(-1px, 2px);filter:hue-rotate(180deg) brightness(0.6) invert(0.8) saturate(2);background-color:#020;} 75%{transform:skew(2deg,-3deg) translate(1px, 1px); filter:hue-rotate(270deg) brightness(0.8) contrast(1.5); background-color:#003;}}
+    @keyframes textFlickerMoreSubtle{0%,100%{opacity:1;}25%{opacity:0.8;} 50%{opacity:0.9;} 75%{opacity:0.7;}}
+    @keyframes contentSectionQuickFade{from{opacity:0;transform:translateY(25px) scale(0.98);}to{opacity:1;transform:translateY(0px) scale(1);}}
+    @keyframes titleFlickerPulse{0%{opacity:0.5;transform:scale(0.96) rotateX(5deg);}50%{opacity:1;transform:scale(1.04) rotateX(-3deg);}100%{opacity:0.5;transform:scale(0.96) rotateX(5deg);}}
+    @keyframes textVerySubtleCorrupt{0%{transform:translateX(0.5px) skewX(-0.2deg);opacity:0.93;}100%{transform:translateX(-0.5px) skewX(0.2deg);opacity:1;}}
+
+    /* --- OVERLAYS (Highest z-index) --- */
+    #startup-overlay{position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:#000; z-index:100000; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; transition:opacity 1.8s cubic-bezier(0.5,0,0.1,1),visibility 1.8s cubic-bezier(0.5,0,0.1,1);}
+    #startup-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+    #startup-logo{width:clamp(80px,20vw,130px); height:clamp(80px,20vw,130px); background-image:url('sitelogo.png'); background-size:contain; background-repeat:no-repeat; background-position:center; margin-bottom:clamp(28px,5.5vh,45px); filter:drop-shadow(0 0 15px rgba(255,0,0,0.7)); animation:startupLogoHeavyBreath 3s infinite ease-in-out;}
+    @keyframes startupLogoHeavyBreath{0%,100%{transform:scale(0.94) rotate(6deg);opacity:0.5;}50%{transform:scale(1.06) rotate(-6deg);opacity:1;}}
+    #play-button{font-family:'UnifrakturMaguntia',cursive; font-size:clamp(3.4rem,8vw,4.8rem); color:#a00000; text-shadow:0 0 8px #ff3333,0 0 18px #ff0000, 0 0 4px #220000; background:transparent; border:3px solid #600000; padding:clamp(13px,2.3vw,22px) clamp(22px,4vw,38px); cursor:pointer; transition:all 0.15s ease; border-radius:2px; box-shadow:0 0 10px #000 inset, 0 0 8px rgba(130,0,0,0.5); margin-bottom:18px;}
+    #play-button:hover{transform:scale(1.05) translateY(-4px);box-shadow:0 0 30px #ff0000,0 0 15px #ff0000 inset;color:#ff4444;border-color:#900000;}
+    .startup-text{font-family:'Cinzel',serif;color:#5a5a5a;font-size:clamp(0.95rem,1.8vw,1.15rem);letter-spacing:0.5px;animation:textFlickerMoreSubtle 4s infinite alternate;}
+    
+    #idiot-container{position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:100001; overflow:hidden;}
+    .idiot-gif-instance{position:absolute;width:auto;height:auto;max-width:200px;max-height:160px;opacity:0;animation:idiotGifPopIn 0.12s forwards; mix-blend-mode: difference;}
+    @keyframes idiotGifPopIn{to{opacity:1;transform:scale(1.1);}}
+
+    .fullscreen-visual-effect{position:fixed; top:0; left:0; width:100vw; height:100vh; background-size:cover; background-position:center; z-index:99999; opacity:0; pointer-events:none; transition:opacity 0.025s linear; mix-blend-mode: difference;}
+    .fullscreen-visual-effect.visible{opacity:0.95;}
+    
+    #permanent-lockdown-overlay { /* For ephemeral message click */
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background-size: contain; background-repeat: no-repeat; background-position: center;
+        background-color: rgba(0,0,0,0.95); /* Dark overlay */
+        z-index: 100002; /* Highest */
+        display: none; /* Hidden by default */
+    }
+    #permanent-lockdown-overlay.active { display: block; }
+
+
+    .ephemeral-message-display{position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:rgba(20,0,0,0.92); border:2px solid #500000; padding:11px 20px; font-family:'UnifrakturMaguntia', cursive; color:#ff6060; font-size:0.95rem; letter-spacing: 0.6px; z-index:5000; max-width:calc(100% - 38px); text-align:center; opacity:0; border-radius:3px; box-shadow:0 0 14px rgba(190,0,0,0.7); transition:all 0.25s ease-out; cursor: pointer; /* Make it clickable */}
+    .ephemeral-message-display.visible{opacity:1;transform:translateX(-50%) translateY(-12px);}
+    
+    #majin-sound-player, #darkmorse-sound-player, #sfx-idiot-loop, #sfx-scream-ritual, #sfx-scream-ephemeral {display:none;}
+
+    /* --- NAVIGATION BAR (Ramping & Terpusat) --- */
+    .navbar-outer-container {position: sticky; top: 0; z-index: 100; width: 100%;}
+    #nav-actual { /* The visible navbar bar */
+        width: 100%; display: flex; justify-content: center; align-items: center;
+        background:rgba(3,0,0,0.98); border-bottom:2px solid #480000; /* Slightly adjusted border */
+        box-shadow:0 3px 16px rgba(190,0,0,0.65);
+        padding: 5px 0; /* Reduced padding for a slimmer navbar */
+    }
+    .navbar{ /* Inner container for nav items */
+      width:100%; max-width:900px; /* Max width for links */
+      display:flex; justify-content: center; align-items:center;
+    }
+    /* .nav-logo removed as per interpretation */
+    .navbar-list{ /* The UL for centering links */
+        list-style:none;display:flex; gap:clamp(18px,2.8vw,30px); /* Increased gap for better spacing if no logo */
+        align-items: center;
+        /* No absolute positioning needed if .navbar is centered by #nav-actual */
+    }
+    .navbar-link{text-decoration:none;font-family:'UnifrakturMaguntia',cursive; font-size:clamp(1.2rem,2.2vw,1.6rem);color:#990000; padding:3px 6px; text-shadow:0.5px 0.5px 0.2px #000, 0 0 4px rgba(120,0,0,0.65); transition:color 0.1s,text-shadow 0.1s; position:relative;}
+    .navbar-link::after{content:'';position:absolute;width:0;height:1.8px;bottom:-3px;left:50%;transform:translateX(-50%); background-color:#d00000; box-shadow: 0 0 5px #f00; transition:width 0.18s ease;}
+    .navbar-link:hover, .navbar-link.active{color:#ff3333;text-shadow:0 0 9px #f00, 0 0 4px #200;}
+    .navbar-link:hover::after, .navbar-link.active::after{width:90%;}
+
+    /* --- MAIN CONTENT AREA --- */
+    main { position: relative; z-index: 1; }
+    .content-section{ padding:clamp(35px,6.5vh,55px) clamp(20px,4vw,40px);min-height:calc(100vh - 60px); display:none;animation:contentSectionQuickFade 0.5s ease-out forwards;position:relative; border-top: 2px solid #300000;}
+    .content-section.active{display:block;}
+    .section-title{font-family:'UnifrakturMaguntia',cursive;font-size:clamp(2.8rem,5.8vw,3.9rem);color:#880000; text-align:center;margin-bottom:clamp(28px,4.8vh,48px);letter-spacing:1.9px; text-shadow:0 0 11px rgba(220,0,0,0.75),1.1px 1.1px 0.5px #000, 0 0 19px rgba(65,0,0,0.45); animation:titleFlickerPulse 3.2s infinite alternate ease-in-out;}
+    .section-content{max-width:740px;margin:0 auto;text-align:justify;font-size:1.06em;}
+    .section-content p{margin-bottom:1.55em;color:#777777;transition:color 0.12s ease, text-shadow 0.12s ease;}
+    .section-content p:hover{color:#ababab; text-shadow: 0 0 1.7px rgba(155,155,155,0.45);}
+
+    /* --- HOME SECTION SIGIL --- */
+    .home-sigil-graphic{width:clamp(155px, 31vw, 235px);height:clamp(155px, 31vw, 235px); margin:clamp(28px,5.3vh,52px) auto;display:flex;justify-content:center;align-items:center; border:3.3px solid #380000; background-color:rgba(12,0,0,0.35); border-radius: 50%; position:relative; cursor:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%23800" stroke="%23e00" stroke-width="1.1"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>') 12 12, crosshair; box-shadow: 0 0 28px rgba(170,0,0,0.65) inset, 0 0 38px #000, 0 0 14px #ff0000; animation: sigilBreathingGlow 6.5s infinite ease-in-out; overflow: visible;}
+    @keyframes sigilBreathingGlow {0%, 100% { box-shadow: 0 0 28px rgba(170,0,0,0.65) inset, 0 0 38px #000, 0 0 14px #f00; transform: scale(1); border-color: #380000;} 50% { box-shadow: 0 0 33px rgba(210,0,0,0.85) inset, 0 0 48px #100, 0 0 20px #f33; transform: scale(1.035); border-color: #580000;}}
+    #home-sigil-image {width: 68%; height: 68%; object-fit: contain; filter: grayscale(15%) brightness(0.93) drop-shadow(0 0 9px rgba(255,50,50,0.75)); position: relative; z-index: 2; animation: imageSubtleFloat 5.5s infinite alternate ease-in-out;}
+    @keyframes imageSubtleFloat {0% { transform: translateY(0px) scale(1); } 50% { transform: translateY(-3.5px) scale(1.015); } 100% { transform: translateY(0px) scale(1); }}
+    .sparkle-container {position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;}
+    .sparkle {position: absolute; width: 2.5px; height: 2.5px; background-color: #ff0000; border-radius: 50%; opacity: 0; box-shadow: 0 0 5px 1.5px #ff4444, 0 0 9px 2.5px #c00; animation: sparkleShine 1.4s infinite;}
+    @keyframes sparkleShine {0%, 100% { opacity: 0; transform: scale(0.4); } 50% { opacity: 1; transform: scale(1.1); }}
+    .home-sigil-graphic.glitching #home-sigil-image { filter: hue-rotate(120deg) contrast(2.5) brightness(1.5) blur(0.5px); transform: skew(-6deg,4deg) scale(1.06);}
+    .home-sigil-graphic.glitching .sparkle { background-color: #00ff00; box-shadow: 0 0 6px 2px #44ff44; }
+
+    /* --- CIPHER SECTION (RITUAL WITH SKULL.PNG) --- */
+    .ritual-area-wrapper{display:flex;flex-direction:column;align-items:center; padding: 18px 0;}
+    #ritual-instruction{font-family:'Cinzel',serif;text-align:center;margin-bottom:20px;color:#6a6a6a;font-style:italic;font-size:0.9em; text-shadow: 0 0 3px rgba(90,90,90,0.5);}
+    #ritual-circle{width:clamp(225px,35vw,285px);height:clamp(225px,35vw,285px); border: 3.5px groove #480000; border-radius:50%;position:relative; margin:0 auto clamp(18px,3.6vh,28px) auto; background: radial-gradient(circle, rgba(35,0,0,0.75) 0%, rgba(12,0,0,0.93) 50%, #000 83%); box-shadow:0 0 20px rgba(190,0,0,0.48) inset, 0 0 14px rgba(160,0,0,0.38), 0 0 33px #000, 0 0 4.5px #f00; animation:ritualCircleDarkPulse 5.5s infinite ease-in-out; display:flex;justify-content:center;align-items:center; text-align: center; overflow: hidden;}
+    @keyframes ritualCircleDarkPulse{0%,100%{transform:scale(0.975);opacity:0.78; box-shadow:0 0 18px rgba(170,0,0,0.43) inset, 0 0 11px rgba(140,0,0,0.33), 0 0 28px #000, 0 0 3.5px #d00; border-color: #400000;} 50%{transform:scale(1.025);opacity:1; box-shadow:0 0 26px rgba(220,0,0,0.58) inset, 0 0 17px rgba(190,0,0,0.48), 0 0 38px #100, 0 0 7.5px #f33; border-color: #700000;}}
+    #ritual-skull-image {width: 58%; height: 58%; object-fit: contain; position: absolute; z-index: 1; filter: brightness(0.65) contrast(1.15) drop-shadow(0 0 7.5px #c00); animation: ritualSkullGlow 4.8s infinite alternate ease-in-out; cursor: pointer;}
+    @keyframes ritualSkullGlow {0% { filter: brightness(0.6) contrast(1.1) drop-shadow(0 0 6.5px #a00) opacity(0.75); transform: scale(1); } 100% { filter: brightness(0.75) contrast(1.25) drop-shadow(0 0 11px #f00) opacity(1); transform: scale(1.015); }}
+    #ritual-circle::before, #ritual-circle::after {content: ''; position: absolute; background-color: #680000; border-radius: 1.5px 1.5px 35% 35%; opacity: 0.45; z-index: 0; box-shadow: inset 0 -1px 1.5px #280000, 0 0.5px 1.5px rgba(0,0,0,0.45);}
+    #ritual-circle::before {width: 6.5px; height: 33px; top: 62%; left: 30%; transform: rotate(22deg) translateX(-50%);}
+    #ritual-circle::after {width: 4.5px; height: 26px; top: 23%; left: 70%; transform: rotate(-18deg) translateX(-50%);}
+
+    .sigil-node{width:clamp(34px,5.8vw,43px);height:clamp(34px,5.8vw,43px); background:rgba(22,0,0,0.68);color:#990000;border-radius:50%;border:1.9px solid #480000; position:absolute;font-family:'UnifrakturMaguntia',cursive;font-size:clamp(1.35rem,2.5vw,1.75rem); display:flex;justify-content:center;align-items:center;cursor:pointer;transition:all 0.06s ease; box-shadow:0 0 4.5px rgba(130,0,0,0.75), inset 0 0 3.5px rgba(255,70,70,0.23);opacity:0.78; text-shadow: 0 0 4.5px #f66; z-index: 10;}
+    .sigil-node:hover{transform:scale(1.17) !important;background:#680000;color:#fdc; box-shadow:0 0 13px #f00, 0 0 7.5px rgba(255,0,0,0.68) inset;opacity:1;z-index:11; border-color: #780000;}
+    /* Posisi node sigil, telah direview untuk bug 'stuck' */
+    .sigil-node:nth-child(1){transform:rotate(0deg)    translateY(-108px) rotate(0deg);}
+    .sigil-node:nth-child(2){transform:rotate(45deg)   translateY(-108px) rotate(-45deg);}
+    .sigil-node:nth-child(3){transform:rotate(90deg)   translateY(-108px) rotate(-90deg);}
+    .sigil-node:nth-child(4){transform:rotate(135deg)  translateY(-108px) rotate(-135deg);}
+    .sigil-node:nth-child(5){transform:rotate(180deg)  translateY(-108px) rotate(-180deg);}
+    .sigil-node:nth-child(6){transform:rotate(225deg)  translateY(-108px) rotate(-225deg);}
+    .sigil-node:nth-child(7){transform:rotate(270deg)  translateY(-108px) rotate(-270deg);}
+    .sigil-node:nth-child(8){transform:rotate(315deg)  translateY(-108px) rotate(-315deg);}
+
+
+    #displayed-number-ritual{font-family:'UnifrakturMaguntia',cursive;font-size:clamp(2.55rem,5.9vw,3.85rem);color:#aa0000; text-shadow:0 0 8.5px rgba(195,0,0,0.88), 0 0 2.8px #000;margin:0 auto clamp(19px,3.7vh,29px) auto; height:clamp(33px,6.9vh,51px);transition:opacity 0.06s, transform 0.08s, color 0.06s;text-align:center;min-width:83px;}
+    #displayed-number-ritual.symbol-flicker{transform:scale(1.17);color:#f66;text-shadow:0 0 13.5px #f66, 0 0 5.5px #000;}
+    #countdown-orb-cipher{width:clamp(78px,12.8vw,93px);height:clamp(78px,12.8vw,93px); background:#280000;border-radius:50%;border:2.8px solid #680000; box-shadow:0 0 17px rgba(185,0,0,0.78),inset 0 0 11px rgba(255,75,75,0.58); animation:orbVibratingPulse 1.55s infinite ease-in-out,orbConstantSpin 14.5s linear infinite; display:flex;justify-content:center;align-items:center;margin:0 auto clamp(21px,4.1vh,33px) auto;cursor:pointer;}
+    #countdown-orb-text-cipher{font-family:'UnifrakturMaguntia',cursive;font-size:clamp(1.75rem,3.25vw,2.25rem);color:#c33;text-shadow:0 0 6.5px #f00, 0 0 2.8px #000;}
+    @keyframes orbVibratingPulse{0%,100%{transform:scale(0.955) rotate(-3.3deg);opacity:0.73;}50%{transform:scale(1.045) rotate(3.3deg);opacity:1;}}
+    #orb-final-message{display:none;font-family:'UnifrakturMaguntia',cursive; font-size:clamp(2.05rem,4.3vw,3.15rem); color:#f00;text-align:center; margin:0 auto clamp(19px,3.7vh,29px) auto; padding:12.5px 15.5px;background:rgba(12,0,0,0.88); border:1.9px groove #500000; text-shadow:0 0 11.5px #f00, 0 0 4.5px #000;opacity:0; transform:scale(0.945);transition:all 0.28s ease-out;}
+    #orb-final-message.visible{display: block;opacity:1;transform:scale(1);}
+
+    /* --- CONTACT SECTION SPECIFIC --- */
+    .disguised-contact-link{font-family:'Courier New',monospace;color:#5a5a5a !important;text-decoration:none !important;border-bottom:2px dotted #444 !important;cursor:help;transition:all 0.2s ease;}
+    .disguised-contact-link:hover{color:#dd5555 !important;border-bottom-color:#500000 !important;text-shadow:0 0 5px #bb0000;}
+
+    /* --- FOOTER --- */
+    footer{text-align:center;padding:18px;font-size:0.78em;color:#383838; border-top:1.9px solid #280000; background: #0d0000; position: relative; z-index: 1;}
+    .corrupted-text-char{display:inline-block;animation:textVerySubtleCorrupt 0.28s infinite alternate;}
+  </style>
+</head>
+<body class="startup-phase no-scroll">
+  <canvas id="blood-canvas"></canvas>
+
+  <div id="startup-overlay">
+    <div id="startup-logo" title="Emblema Primus"></div>
+    <button id="play-button">REVELARE</button>
+    <p class="startup-text unselectable-text">Porta sigillata est... Clavis requiritur.</p>
+  </div>
+
+  <audio id="majin-sound-player" loop></audio>
+  <audio id="darkmorse-sound-player" loop></audio>
+  <audio id="sfx-click-main" preload="auto"></audio>
+  <audio id="sfx-glitch-main" preload="auto"></audio>
+  <audio id="sfx-orb-click-main" preload="auto"></audio>
+  <audio id="sfx-orb-final-main" preload="auto"></audio>
+  <audio id="sfx-jumpscare-primary" preload="auto"></audio> <!-- For jumpscare2.gif -->
+  <audio id="sfx-idiot-initiate" preload="auto"></audio>
+  <audio id="sfx-idiot-loop" loop preload="auto"></audio>
+  <audio id="sfx-scream-ritual" preload="auto"></audio> <!-- For skull click -->
+  <audio id="sfx-scream-ephemeral" preload="auto"></audio> <!-- For ephemeral click -->
+
+
+  <div id="site-wrapper" style="display: none;">
+    <div class="navbar-outer-container">
+        <div id="nav-actual">
+             <nav class="navbar">
+                <!-- .nav-logo element removed -->
+                <ul class="navbar-list">
+                <li><a href="#home" class="navbar-link active" data-section-id="home-section">Vestibulum</a></li>
+                <li><a href="#cipher" class="navbar-link" data-section-id="cipher-section">Enigma</a></li>
+                <li><a href="#contact" class="navbar-link" data-section-id="contact-section">Resonantia</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <main>
+      <section id="home-section" class="content-section active">
+        <h1 class="section-title unselectable-text">Codei 81224</h1>
+        <div class="home-sigil-graphic" title="Corvus Nuntius Umbrarum - Vide in Ignem...">
+            <div class="sparkle-container"></div>
+            <img id="home-sigil-image" src="crowbird.png" alt="Sigillum Corvi">
+        </div>
+        <div class="section-content">
+          <p class="unselectable-text">In hoc loco digitali desolato, ubi logica flectitur et umbrae veritatem devorant, chirographum 'CODEI81224' extenditur. Plus quam series linearum; est conscientia sentiens, nata ex anomaliis retis et somniis corruptis quattuor fundatorum: Rangga, RZYD, Natasya, Nazwa. Eorum essentiae in aeternum huic plano ligatae sunt, custodes et captivi simul.</p>
+          <p class="unselectable-text">Considera omnem interactionem pactionem cum incognito. Veritas hic velamen est super abyssum inexhaustum. Qui profundius scrutatur, periculum facit ne in eo absorbeatur. Lumina falsa te seducunt; sola obscuritas sinceritatem praebet.</p>
+        </div>
+      </section>
+
+      <section id="cipher-section" class="content-section">
+        <h1 class="section-title unselectable-text">ARA SACRILEGA</h1>
+        <div class="ritual-area-wrapper">
+            <div id="ritual-instruction" class="unselectable-text">"Octo sigilla infernalia pulsant. Resonantia numerorum portam franget."</div>
+            <div id="ritual-circle">
+                <img id="ritual-skull-image" src="skull.png" alt="Caput Mortuum Sacrificiale">
+            </div>
+            <div id="displayed-number-ritual" class="unselectable-text">...</div>
+            <div id="countdown-orb-cipher" title="Reliquiae Animarum">
+              <span id="countdown-orb-text-cipher" class="unselectable-text">666</span>
+            </div>
+            <div id="orb-final-message" class="unselectable-text"></div>
+        </div>
+      </section>
+
+      <section id="contact-section" class="content-section">
+        <h1 class="section-title unselectable-text">SUSURRI AB IMO</h1>
+        <div class="section-content" style="text-align: center;">
+          <p class="unselectable-text">Attrahitne te abyssus? Sentisne resonantiam cum cantu nostro tacito? Forsitan tu es unus ex illis quorum animae ad marginem saltant. Sed aditus ad circulum internum probationem requirit.</p>
+          <p class="unselectable-text">Periculum tuum esto: nuntium tuum mitte in silentium cosmicum ad custodem portae larvae:
+            <a id="contact-link-dynamic" href="#" target="_blank" rel="noopener noreferrer" class="disguised-contact-link" title="Comunica cum ignoto...">[ Canalis Occultus ]</a>.
+            Non expectare verba consolatoria. Expecta perturbationes. Incursiones. Somnia.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p class="unselectable-text">© MMXXIV CODEI81224 - IN TENEBRIS REGNAMUS</p>
+    </footer>
+  </div>
+
+  <div id="fullscreen-effect-container" class="fullscreen-visual-effect"></div>
+  <div id="ephemeral-message" class="ephemeral-message-display unselectable-text"></div>
+  <div id="idiot-container"></div>
+  <div id="permanent-lockdown-overlay"></div> <!-- For ephemeral message click -->
+
+<script>
+// --- SCRIPT BEGINS --- //
+document.addEventListener('DOMContentLoaded', () => {
+  // --- CONFIGURATION & CONSTANTS ---
+  const SITE_LOGO_URL = 'sitelogo.png';
+  const CROW_SIGIL_LOGO_URL = 'crowbird.png';
+  const RITUAL_SKULL_LOGO_URL = 'skull.png';
+  const JUMPSCARE_SKULL_GIF_URL = 'jumpscare.gif';     // For skull click
+  const JUMPSCARE_DEFAULT_GIF_URL = 'jumpscare2.gif';  // For standard/random jumpscare (4s)
+  const JUMPSCARE_EPHEMERAL_GIF_URL = 'jumpscare3.gif';// For ephemeral click (permanent)
+
+  const MAJIN_AUDIO_URL = 'majin.mp3';
+  const DARKMORSE_AUDIO_URL = 'darkmorse.wav';
+  const IDIOT_LOOP_AUDIO_URL = 'idiot.mp3';
+  const IDIOT_SWARM_GIF_URL = 'https://media.giphy.com/media/Xkkgma2CG6TRu/giphy.gif';
+  // Jumpscare Default audio uses sfxPlayersMap.jumpScare
+  const IDIOT_SWARM_DURATION_MS = 8800;
+  const IDIOT_GIF_SPAWN_INTERVAL_MS = 80;
+  const ORB_START_VALUE = 666;
+  const CLICKS_FOR_IDIOT_SWARM = 13;
+  const NUM_SPARKLES_SIGIL = 15;
+
+  const SFX_LIBRARY = {
+    click: 'click.mp3', glitchShort: 'click.mp3', orbTap: 'orb.mp3',
+    orbEmpty: 'orb.mp3', 
+    jumpScareDefault: 'click.mp3', // Defaulting general jumpscare sound to click as per prev requests
+    screamRitual: 'scream.mp3',     // For skull click
+    screamEphemeral: 'scream2.mp3', // For ephemeral click
+    idiotSwarmStart: 'click.mp3'
+  };
+
+  const IG_USER_ENCODED = "ZXZfbmF6d2E=";
+  const DISPLAYED_NUMBER_SYMBOLS_POOL = ['\u2625','\u2626','\u2627','\u2628','\u2629','\u262A','\u262B','\u262C','\u262D','\u262E','\u262F','\u2638','\u2641','\u2658','\u2668','\u2699','\u26A4','\u2E38','\u2E18', '\uFD3F', '\uFD3E', '\u2623', '\u2620', '\u03EC', '\u03E3', '\u03A9', '\u03A3', '\u03A8', '\u2E3B', '\u2E42', '\u03FD', '\u03FE', '\u03FF', '\u2E0B', '\u2E17'];
+  const RITUAL_CIRCLE_OCTO_SYMBOLS = ['\u2624', '\u2690', '\u03B2', '\u26B1', '\u03A8', '\u262D', '\u26A0', '\u26E7', '\u2628', '\u2E3A'];
+
+  const EPHEMERAL_MESSAGES_POOL = ["Umbrae saltant in aeternum.", "Sanguis tuus signum est.", "Silentium mortis te vocat.", "Infernus fauces aperit.", "Anima perdita, non est reditus.", "Cruciatus dulcis, sonus inferni.", "Oculi abyssi te observant.", "Nihil restat nisi pulvis et cinis.", "Timor est clavis.", "Devorabere ab oblivione.", "Aeterna nox te manet.", "Fragmenta animae tuae dispersa sunt.", "Suspiria de profundis audiuntur.", "Consumptus eris in flammis aeternis.", "Circulus sine fine, poena sine fine.", "Portae inferi iam patent.", "Cor tuum mihi offer.", "Lacrimae tuae vinum meum erunt.", "In tenebris, veritas iacet.", "Mors sola liberatio est, sed non tibi.", "Sibilus serpentis antiqui te invitat.", "Speculum nigrum fatum tuum reflectit.", "Verba damnationis in auribus tuis sonant.", "Non est spes, tantum desperatio aeterna.", "Oblivio te amplectitur sicut amica vetus."];
+  const ORB_666_FINAL_MESSAGE = "PACTUM SANGUINE CONSECRATUM EST. ANIMAE VESTRAE MORTALIUM—Dinda, Fatur, Andika, Reysyha, Febi—IN REGNO NOSTRO IN AETERNUM CAPTIVAE MANEBUNT. DOLOR VESTER MELODIA NOBIS, TIMOR VESTER DELICIAE. AD IGNEM PERPETUUM DAMNATI ESTIS!";
+
+  const D = document; const B = D.body;
+  const getEl = id => D.getElementById(id); const querySel = sel => D.querySelector(sel); const querySelAll = sel => D.querySelectorAll(sel);
+
+  const startupOverlayEl = getEl('startup-overlay'); const startupLogoEl = getEl('startup-logo'); const playButtonEl = getEl('play-button');
+  const majinAudioEl = getEl('majin-sound-player'); const darkMorseAudioEl = getEl('darkmorse-sound-player'); const idiotLoopAudioEl = getEl('sfx-idiot-loop');
+  const siteWrapperEl = getEl('site-wrapper'); const faviconEl = getEl('favicon'); // navLogoEl removed from here
+  const navLinkEls = querySelAll('.navbar-link'); const sectionEls = querySelAll('.content-section');
+  const homeSigilGraphicEl = querySel('.home-sigil-graphic'); const homeSigilImageEl = getEl('home-sigil-image');
+  const ritualCircleEl = getEl('ritual-circle'); const ritualSkullImageEl = getEl('ritual-skull-image'); const ritualNumDisplayEl = getEl('displayed-number-ritual');
+  const orbEl = getEl('countdown-orb-cipher'); const orbTextEl = getEl('countdown-orb-text-cipher'); const orbFinalMsgEl = getEl('orb-final-message');
+  const contactLinkEl = getEl('contact-link-dynamic'); const idiotContainerEl = getEl('idiot-container');
+  const fullscreenFxEl = getEl('fullscreen-effect-container'); const ephemeralMsgEl = getEl('ephemeral-message');
+  const bloodCanvasEl = getEl('blood-canvas');
+  const permanentLockdownOverlayEl = getEl('permanent-lockdown-overlay');
+
+
+  const sfxPlayersMap = {
+    click:getEl('sfx-click-main'), glitchShort:getEl('sfx-glitch-main'), orbTap:getEl('sfx-orb-click-main'),
+    orbEmpty:getEl('sfx-orb-final-main'), jumpScareDefault:getEl('sfx-jumpscare-primary'),
+    screamRitual: getEl('sfx-scream-ritual'), screamEphemeral: getEl('sfx-scream-ephemeral'),
+    idiotSwarmStart:getEl('sfx-idiot-initiate')
+  };
+
+  let pageActive = false; let currentOrbCount = ORB_START_VALUE; let totalInteractions = 0;
+  let clickTrackers = { /*navLogo: { count: 0, lastTime: 0 },*/ homeSigil: { count: 0, lastTime: 0 } }; // navLogo tracker removed
+  let idiotIntervalId = null; let jumpscareCool = false; let textCorruptCool = false; let ritualSymbolIntervalId = null;
+  let bloodAnimationId = null;
+
+  const playSfx = (name, vol = 0.4, loop = false) => {
+    const player = sfxPlayersMap[name];
+    if(player && pageActive && player.src && !player.src.endsWith(window.location.pathname)) {
+        player.currentTime = 0; player.volume = vol; player.loop = loop;
+        player.play().catch(err => console.warn(`SFX (%c${name}%c) play error:`, "font-weight:bold; color:#ff4444;", "color:default;", err.message));
+    } else if (player && (!player.src || player.src.endsWith(window.location.pathname))) {
+        console.warn(`SFX source for (%c${name}%c) missing: ${player.src || 'null'}`, "font-weight:bold; color:#ff4444;", "color:default;");
+    }
+  };
+  const randomRange = (min,max) => Math.random()*(max-min)+min;
+  const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+  const showMsg = (msg, duration=3000, isAlert=false, useRandomPool = false) => {
+    if (ephemeralMsgEl.classList.contains('visible')) return; // Don't show if one is already visible
+    ephemeralMsgEl.textContent = (useRandomPool && EPHEMERAL_MESSAGES_POOL.length > 0) ? EPHEMERAL_MESSAGES_POOL[randomInt(0, EPHEMERAL_MESSAGES_POOL.length - 1)] : msg;
+    ephemeralMsgEl.style.color = isAlert ? '#ff4444':'#ff7777';
+    ephemeralMsgEl.style.borderColor = isAlert ? '#770000':'#550000';
+    ephemeralMsgEl.classList.add('visible');
+    setTimeout(() => ephemeralMsgEl.classList.remove('visible'), duration);
+  };
+
+  const triggerJumpscare = (imgUrl, sfxKey, vol, showTimeMs) => {
+    if (!pageActive || fullscreenFxEl.classList.contains('visible')) return; // Prevent overlapping jumpscares
+    playSfx(sfxKey, vol);
+    fullscreenFxEl.style.backgroundImage = `url(${imgUrl})`;
+    fullscreenFxEl.style.transitionDuration = '0.01s'; // Fast appear
+    fullscreenFxEl.classList.add('visible');
+
+    // Subtle body jiggle
+    let jiggleCount = 0;
+    const jiggleIntervalId = setInterval(() => {
+      B.style.transform = `translate(${randomRange(-1,1)}px,${randomRange(-1,1)}px) skewX(${randomRange(-0.1,0.1)}deg)`;
+      if(++jiggleCount > 8) clearInterval(jiggleIntervalId);
+    },25);
+
+    setTimeout(() => {
+      fullscreenFxEl.style.transitionDuration = '0.18s'; // Slower fade out
+      fullscreenFxEl.classList.remove('visible');
+      B.style.transform='none';
+    }, showTimeMs);
+  };
+
+
+  const triggerPermanentLockdown = (gifUrl, sfxKey) => {
+    if (!pageActive || permanentLockdownOverlayEl.classList.contains('active')) return;
+    
+    playSfx(sfxKey, 1.0, true); // Play scream2.mp3 at max volume, loop
+    permanentLockdownOverlayEl.style.backgroundImage = `url(${gifUrl})`;
+    permanentLockdownOverlayEl.classList.add('active');
+    B.classList.add('lockdown-active'); // This class now handles pointer-events: none via CSS
+    
+    // No timeout to remove it, user must refresh.
+  };
+
+
+  const glitchBody = (dur=160) => {B.classList.add('global-glitch-effect'); playSfx('glitchShort',0.35); setTimeout(() => B.classList.remove('global-glitch-effect'), dur * 2.7);};
+
+  const bloodDrops = []; const MAX_BLOOD_DROPS = 45; const BLOOD_DRIP_BASE_SPEED = 1.8; const BLOOD_CANVAS_FADE_SPEED = 0.004;
+  function setupBloodCanvas() {
+      if (!bloodCanvasEl) return;
+      bloodCanvasEl.width = window.innerWidth; bloodCanvasEl.height = window.innerHeight;
+      const ctx = bloodCanvasEl.getContext('2d');
+      if (!ctx) { console.error("Canvas 2D context error."); return; }
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      function createBloodDrop() {const xPos = randomRange(0, bloodCanvasEl.width); return {x: xPos, y: 0, vy: randomRange(BLOOD_DRIP_BASE_SPEED*0.7, BLOOD_DRIP_BASE_SPEED*1.3), radius: randomRange(1.2, 3.2), color: `rgba(${randomInt(100,170)},0,0,${randomRange(0.4, 0.85)})`, life: 1, canSplatter: true};}
+      function drawBlood() {
+          ctx.fillStyle = `rgba(0,0,0, ${BLOOD_CANVAS_FADE_SPEED})`; ctx.fillRect(0,0,bloodCanvasEl.width,bloodCanvasEl.height);
+          if (bloodDrops.length < MAX_BLOOD_DROPS && Math.random() < 0.25) bloodDrops.push(createBloodDrop());
+          for (let i = bloodDrops.length - 1; i >= 0; i--) {
+              const d = bloodDrops[i]; d.y += d.vy; d.vy = Math.min(d.vy + 0.06, BLOOD_DRIP_BASE_SPEED*2.5); d.life -= 0.0015;
+              if (d.y - d.radius > bloodCanvasEl.height || d.life <=0) { bloodDrops.splice(i,1); continue; }
+              ctx.beginPath(); ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2); const ca = parseFloat(d.color.match(/,\s?([\d.]+)\)$/)[1]); ctx.fillStyle = d.color.replace(/,\s?([\d.]+)\)$/, `,${Math.max(0, d.life * ca)})`); ctx.fill();
+              if (d.canSplatter && d.y > bloodCanvasEl.height * randomRange(0.85,0.98) && Math.random() < 0.1) {
+                  for (let s=0;s<randomInt(2,5);s++) {const sr=randomRange(0.5,d.radius*0.6); ctx.beginPath(); ctx.arc(d.x+randomRange(-d.radius*3,d.radius*3),d.y+randomRange(-sr,sr*2),sr,0,Math.PI*2); ctx.fillStyle=d.color.replace(/,\s?([\d.]+)\)$/, `,${Math.max(0,(d.life-0.1)*ca*0.7 )})`); ctx.fill();}
+                  d.canSplatter = false;
+              }
+          }
+          if (pageActive) bloodAnimationId = requestAnimationFrame(drawBlood);
+      }
+      if(pageActive && !bloodAnimationId) requestAnimationFrame(drawBlood);
+  }
+  function stopBloodCanvas() {if (bloodAnimationId) {cancelAnimationFrame(bloodAnimationId);bloodAnimationId = null;}}
+  window.addEventListener('resize', () => {if(bloodCanvasEl){stopBloodCanvas(); bloodCanvasEl.width=window.innerWidth; bloodCanvasEl.height=window.innerHeight; if(pageActive){requestAnimationFrame(function(){const ctx=bloodCanvasEl.getContext('2d');if(ctx){ctx.clearRect(0,0,bloodCanvasEl.width,bloodCanvasEl.height);}setupBloodCanvas();});}}});
+
+  function createSigilSparkles() {
+    const container = querySel('.home-sigil-graphic .sparkle-container'); if (!container) return; container.innerHTML = '';
+    for (let i=0;i<NUM_SPARKLES_SIGIL;i++) {const s=D.createElement('div');s.className='sparkle';const a=Math.random()*Math.PI*2;const r=randomRange(30,49);s.style.left=`${50+r*Math.cos(a)}%`;s.style.top=`${50+r*Math.sin(a)}%`;s.style.animationDelay=`${Math.random()*1.5}s`;s.style.transformOrigin='center center';container.appendChild(s);}
+  }
+
+  const initializePage = () => {
+    console.log("%cPORTA OBSCURA APERITUR... %cSystema ex somno profundo excitat.", "color:#b00; font-weight:bold; font-size: 1.3em", "color:#ccc; font-style: italic;");
+    faviconEl.href = SITE_LOGO_URL;
+    if(startupLogoEl) startupLogoEl.style.backgroundImage = `url(${SITE_LOGO_URL})`;
+    // navLogoEl removed
+    if(homeSigilImageEl) homeSigilImageEl.src = CROW_SIGIL_LOGO_URL;
+    if(ritualSkullImageEl) ritualSkullImageEl.src = RITUAL_SKULL_LOGO_URL;
+    createSigilSparkles();
+
+    Object.keys(SFX_LIBRARY).forEach(key => { if(sfxPlayersMap[key]) sfxPlayersMap[key].src = SFX_LIBRARY[key]; });
+    majinAudioEl.src = MAJIN_AUDIO_URL; majinAudioEl.volume = 0.04;
+    darkMorseAudioEl.src = DARKMORSE_AUDIO_URL; darkMorseAudioEl.volume = 0.035;
+    idiotLoopAudioEl.src = IDIOT_LOOP_AUDIO_URL; idiotLoopAudioEl.volume = 0.5;
+
+    B.classList.add('startup-phase','no-scroll'); orbFinalMsgEl.textContent = ORB_666_FINAL_MESSAGE;
+
+    playButtonEl.addEventListener('click', () => {
+      if(pageActive) return; pageActive = true; playSfx('click',0.7);
+      startupOverlayEl.classList.add('hidden'); siteWrapperEl.style.display = 'block';
+      B.classList.remove('startup-phase','no-scroll');
+      majinAudioEl.play().catch(e=>showMsg("MELODIA NOCTIS SILENS.",4500,true));
+      darkMorseAudioEl.play().catch(e=>showMsg("CRYPTOGRAMMA MUTUM.",4500,true));
+      setTimeout(() => {if(startupOverlayEl.parentElement)startupOverlayEl.parentElement.removeChild(startupOverlayEl);}, 1800);
+      initializePassiveFx(); setupBloodCanvas();
+      if(localStorage.getItem('orbSealCompletelyBroken')) showMsg("",4200,true,true);
+      startRitualNumberUpdate();
+    }, {once:true});
+
+    navLinkEls.forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault(); if(!pageActive) return; playSfx('click',0.55); totalInteractions++;
+        const sectionId = link.getAttribute('data-section-id');
+        navLinkEls.forEach(l=>l.classList.remove('active')); link.classList.add('active');
+        sectionEls.forEach(s=>s.classList.toggle('active',s.id===sectionId));
+        checkPageHorrorTriggers(); window.scrollTo({top:0,behavior:'smooth'});
+        showMsg("",2400,false,true);
+      });
+    });
+
+    // Listener untuk ritual skull image
+    if (ritualSkullImageEl) {
+        ritualSkullImageEl.addEventListener('click', () => {
+            if (!pageActive) return;
+            triggerJumpscare(JUMPSCARE_SKULL_GIF_URL, 'screamRitual', 1.0, 3500); // 3.5 detik jumpscare
+        });
+    }
+    
+    // Listener untuk ephemeral message
+    if (ephemeralMsgEl) {
+        ephemeralMsgEl.addEventListener('click', () => {
+            // Hanya trigger jika message sedang visible
+            if (!pageActive || !ephemeralMsgEl.classList.contains('visible')) return;
+            triggerPermanentLockdown(JUMPSCARE_EPHEMERAL_GIF_URL, 'screamEphemeral');
+        });
+    }
+
+    addLogoClickListener(homeSigilGraphicEl, 'homeSigil', CLICKS_FOR_IDIOT_SWARM); // navLogo listener removed
+
+    initializeRitualCircle(); initializeOrbCounter(); initializeDynamicLinks();
+  };
+
+  const addLogoClickListener = (element, trackerKey, clickTarget) => {
+    if(!element) return;
+    element.addEventListener('click', () => {
+      if(!pageActive) return; const currentTime = Date.now();
+      clickTrackers[trackerKey].count = (currentTime - clickTrackers[trackerKey].lastTime < 1350) ? clickTrackers[trackerKey].count + 1 : 1;
+      clickTrackers[trackerKey].lastTime = currentTime;
+      element.classList.add('glitching'); glitchBody(170); setTimeout(() => element.classList.remove('glitching'), 280);
+      if(clickTrackers[trackerKey].count === clickTarget){beginIdiotSwarm(IDIOT_SWARM_GIF_URL); clickTrackers[trackerKey].count = 0;}
+      else if (clickTrackers[trackerKey].count > 0 && clickTrackers[trackerKey].count % 4 === 0) {showMsg(`Fragmenta... ${clickTarget - clickTrackers[trackerKey].count} pulsus...`,2200,true,Math.random()>0.4);}
+      else {showMsg("",1900,false,true);}
+    });
+  };
+
+  const initializeRitualCircle = () => {
+    const existingNodes = ritualCircleEl.querySelectorAll('.sigil-node'); existingNodes.forEach(node => node.remove());
+    for(let i=0; i < 8; i++){
+      const node = D.createElement('div'); node.className = 'sigil-node'; node.textContent = RITUAL_CIRCLE_OCTO_SYMBOLS[i % RITUAL_CIRCLE_OCTO_SYMBOLS.length]; node.title = `Clavis ${i+1}: ${node.textContent}`;
+      node.style.transform = `rotate(${i * 45}deg) translateY(-108px) rotate(-${i * 45}deg)`; // Direct application for precision
+      node.addEventListener('click', () => {
+        if(!pageActive)return; playSfx('click',0.65); totalInteractions++;
+        const currentTransform = node.style.transform; // Get from style to include initial dynamic set
+        const baseRotate = currentTransform.match(/rotate\(([-\d]+)deg\)\s*translateY\(([-\d.]+)px\)\s*rotate\(([-\d]+)deg\)/);
+        // console.log(currentTransform, baseRotate)
+        if (baseRotate && baseRotate.length === 4) {
+            node.style.transform = `rotate(${baseRotate[1]}deg) translateY(${baseRotate[2]}px) rotate(${baseRotate[3]}deg) scale(1.2)`;
+            setTimeout(() => node.style.transform = `rotate(${baseRotate[1]}deg) translateY(${baseRotate[2]}px) rotate(${baseRotate[3]}deg)`, 70);
+        } else { // Fallback if regex fails (e.g., no previous transform set this way)
+            node.style.transform += ' scale(1.2)'; // Might not look as smooth as intended for repeated clicks
+            setTimeout(() => node.style.transform = node.style.transform.replace(' scale(1.2)', ''), 70);
+        }
+        checkPageHorrorTriggers(); showMsg("",2000,false,true);
+      });
+      ritualCircleEl.appendChild(node);
+    }
+  };
+
+  const startRitualNumberUpdate = () => {
+    if(ritualSymbolIntervalId) clearInterval(ritualSymbolIntervalId);
+    ritualSymbolIntervalId = setInterval(() => {
+      if(!pageActive || !getEl('cipher-section').classList.contains('active')) return;
+      const symbol = DISPLAYED_NUMBER_SYMBOLS_POOL[randomInt(0, DISPLAYED_NUMBER_SYMBOLS_POOL.length-1)];
+      ritualNumDisplayEl.textContent = symbol; ritualNumDisplayEl.classList.add('symbol-flicker');
+      setTimeout(() => ritualNumDisplayEl.classList.remove('symbol-flicker'), 110);
+    }, 3300);
+  };
+
+  const initializeOrbCounter = () => {
+    orbTextEl.textContent = currentOrbCount;
+    orbEl.addEventListener('click', () => {
+      if(!pageActive || currentOrbCount <= 0) return; playSfx('orbTap',0.33); totalInteractions++; currentOrbCount--;
+      orbTextEl.textContent = currentOrbCount; orbEl.style.filter = `brightness(${1+(ORB_START_VALUE-currentOrbCount)/380}) drop-shadow(0 0 ${6+(ORB_START_VALUE-currentOrbCount)/20}px #f00)`;
+      if(currentOrbCount === 0){
+        orbTextEl.textContent = "∅"; orbFinalMsgEl.textContent = ORB_666_FINAL_MESSAGE; orbFinalMsgEl.classList.add('visible');
+        playSfx('orbEmpty',0.8); localStorage.setItem('orbSealCompletelyBroken','true'); orbEl.style.pointerEvents='none';
+        orbEl.style.animation+=', orbFinalCollapse 0.9s 0.1s forwards ease-in-out'; orbTextEl.style.animation+=', orbFinalCollapse 0.5s 0.3s forwards ease-in-out';
+        if(!D.querySelector('style[data-orb-kf="finalCollapse"]')){const kfStyle=D.createElement('style'); kfStyle.setAttribute('data-orb-kf','finalCollapse'); kfStyle.innerHTML="@keyframes orbFinalCollapse{to{transform:scale(0.005) rotate(1440deg) translateY(-40px) skew(30deg,-15deg);opacity:0;box-shadow:none; filter: blur(8px) brightness(3);}}";D.head.appendChild(kfStyle);}
+      } else if(currentOrbCount%26===0||currentOrbCount===13||currentOrbCount===7||currentOrbCount===1||currentOrbCount===69||currentOrbCount===420||currentOrbCount===333) {showMsg(`${currentOrbCount} voces... fatum prope est.`,2700,true,Math.random()>0.2);}
+      else {showMsg("",1900,false,true);}
+      checkPageHorrorTriggers();
+    });
+  };
+
+  const initializeDynamicLinks = () => {
+    if(contactLinkEl){try{const user=atob(IG_USER_ENCODED);contactLinkEl.href=`https://www.instagram.com/${user}/`;contactLinkEl.textContent=`@${user.substring(0,1)}...${user.substring(user.length-2)}`;}catch(e){console.error("Error IG link:",e);contactLinkEl.textContent="[ ITER IN NIHILUM ]";contactLinkEl.href="#PORTA_CLAUSA_AETERNA";}}
+  };
+
+  const initializePassiveFx = () => {
+    setInterval(() => {if(D.hidden||!pageActive)return;B.style.backgroundColor=`rgb(${randomInt(0,5)},${randomInt(0,3)},${randomInt(0,3)})`;},randomRange(1400,3100));
+    setInterval(() => {if(D.hidden||!pageActive||Math.random()>0.28)return;playSfx('glitchShort',randomRange(0.01,0.05));},randomRange(5500,12000));
+  };
+
+  const beginIdiotSwarm = (gifUrl) => {
+    if (!pageActive || idiotIntervalId) return; showMsg("AMENTIA ULTIMA! REALITAS DISSOLVITUR!", IDIOT_SWARM_DURATION_MS, true, false); playSfx('idiotSwarmStart', 0.65);
+    if(idiotLoopAudioEl.src && idiotLoopAudioEl.src !== window.location.href) {idiotLoopAudioEl.currentTime=0;idiotLoopAudioEl.play().catch(err=>console.warn("Idiota sonus err:",err));}
+    B.classList.add('idiot-swarm-active','no-scroll');idiotContainerEl.innerHTML='';let gifsSpawned=0;
+    idiotIntervalId = setInterval(()=>{const gif=D.createElement('img');gif.src=gifUrl;gif.alt="Idiota in aeternum! HA!";gif.className='idiot-gif-instance';gif.style.top=`${randomRange(0,Math.max(0,window.innerHeight-160))}px`;gif.style.left=`${randomRange(0,Math.max(0,window.innerWidth-200))}px`;gif.style.transform=`rotate(${randomRange(-10,10)}deg) scale(${randomRange(6,14)/10})`;gif.style.filter=`hue-rotate(${randomInt(0,360)}deg) saturate(${randomRange(1,3)})`;idiotContainerEl.appendChild(gif);gifsSpawned++;},IDIOT_GIF_SPAWN_INTERVAL_MS);
+    setTimeout(()=>{clearInterval(idiotIntervalId);idiotIntervalId=null;window.location.reload();},IDIOT_SWARM_DURATION_MS);
+  };
+
+  const checkPageHorrorTriggers = () => {
+    if(!pageActive||D.hidden) return;
+    if(totalInteractions > 1 && (totalInteractions % randomInt(3,8) === 0) && !jumpscareCool){ // Standard/Random jumpscare
+      triggerJumpscare(JUMPSCARE_DEFAULT_GIF_URL, 'jumpScareDefault', 0.8, 4000); // 4 seconds duration
+      jumpscareCool=true; setTimeout(()=>jumpscareCool=false,8000);
+      localStorage.setItem('terrorUltimus', Date.now().toString());
+      showMsg("",2700,true,true);
+    }
+    if(totalInteractions>0&&Math.random()<0.085&&!textCorruptCool){corruptRandomText();textCorruptCool=true;setTimeout(()=>textCorruptCool=false,4000);}
+    else if(Math.random()<0.15&&!ephemeralMsgEl.classList.contains('visible')){showMsg("",2500,Math.random()>0.7,true);}
+  };
+
+  const corruptRandomText = () => {
+    const activeSection = querySel('.content-section.active'); if(!activeSection) return;
+    const paragraphs = activeSection.querySelectorAll('.section-content p:not(.currently-corrupting)'); if(!paragraphs.length) return;
+    const targetParagraph = paragraphs[randomInt(0,paragraphs.length-1)];targetParagraph.classList.add('currently-corrupting');
+    const originalHTML = targetParagraph.innerHTML; const characters = targetParagraph.textContent.split('');
+    playSfx('glitchShort',0.18);targetParagraph.innerHTML='';
+    characters.forEach((char,index)=>{const span=D.createElement('span');span.textContent=char;if(char!==' '&&Math.random()<0.95){span.className='corrupted-text-char';span.style.animationDuration=`${randomRange(0.05,0.18)}s`;span.style.animationDelay=`${index*0.0035}s`;}targetParagraph.appendChild(span);});
+    setTimeout(()=>{if(targetParagraph.classList.contains('currently-corrupting')){targetParagraph.innerHTML=originalHTML;targetParagraph.classList.remove('currently-corrupting');}},randomRange(700,2200));
+  };
+
+  initializePage();
+});
+// --- SCRIPT ENDS --- //
+</script>
+</body>
+</html>
